@@ -50,9 +50,11 @@ namespace WotModpackLoader
                 int totalSteps = 0;
                 if (XvmCheck.IsChecked == true) totalSteps++;
                 if (PmodCheck.IsChecked == true) totalSteps++;
+                if (MarksOnGunExtendedCheck.IsChecked == true) totalSteps++;
                 if (BattleEquipmentCheck.IsChecked == true) totalSteps++;
                 if (ClanRewardsCheck.IsChecked == true) totalSteps++;
                 if (TechTreeCheck.IsChecked == true) totalSteps++;
+                if (ExtendedBlacklistCheck.IsChecked == true) totalSteps++;
 
                 int currentStep = 0;
                 if (totalSteps == 0)
@@ -81,6 +83,14 @@ namespace WotModpackLoader
                     currentStep++;
                     InstallProgressBar.Value = (double)currentStep / totalSteps * 100;
                 }
+                if (MarksOnGunExtendedCheck.IsChecked == true)
+                {
+                    InstallProgressBar.IsIndeterminate = true;
+                    await InstallMarksOnGunExtendedAsync(gameFolder, wotVersion);
+                    InstallProgressBar.IsIndeterminate = false;
+                    currentStep++;
+                    InstallProgressBar.Value = (double)currentStep / totalSteps * 100;
+                }
                 if (BattleEquipmentCheck.IsChecked == true)
                 {
                     InstallProgressBar.IsIndeterminate = true;
@@ -101,6 +111,14 @@ namespace WotModpackLoader
                 {
                     InstallProgressBar.IsIndeterminate = true;
                     await InstallTechTreeAsync(gameFolder, wotVersion);
+                    InstallProgressBar.IsIndeterminate = false;
+                    currentStep++;
+                    InstallProgressBar.Value = (double)currentStep / totalSteps * 100;
+                }
+                if (ExtendedBlacklistCheck.IsChecked == true)
+                {
+                    InstallProgressBar.IsIndeterminate = true;
+                    await InstallExtendedBlacklistAsync(gameFolder, wotVersion);
                     InstallProgressBar.IsIndeterminate = false;
                     currentStep++;
                     InstallProgressBar.Value = (double)currentStep / totalSteps * 100;
@@ -230,6 +248,46 @@ namespace WotModpackLoader
             return name.Count(c => c == '.') == 3 && name.All(c => char.IsDigit(c) || c == '.');
         }
 
+        private async Task InstallXvmAsync(string gameFolder, string wotVersion)
+        {
+            string? xvmZipUrl = await GetXvmZipUrlAsync();
+            if (string.IsNullOrEmpty(xvmZipUrl))
+                throw new Exception("Nie znaleziono linku do pobrania XVM!");
+
+            string tempFolder = Path.Combine(gameFolder, ".tempModpackXVM");
+            if (Directory.Exists(tempFolder))
+                Directory.Delete(tempFolder, true);
+            Directory.CreateDirectory(tempFolder);
+
+            string zipPath = Path.Combine(tempFolder, "xvm.zip");
+            using (var http = new HttpClient())
+            using (var resp = await http.GetAsync(xvmZipUrl))
+            {
+                resp.EnsureSuccessStatusCode();
+                using (var fs = new FileStream(zipPath, FileMode.Create, FileAccess.Write))
+                {
+                    await resp.Content.CopyToAsync(fs);
+                }
+            }
+
+            ZipFile.ExtractToDirectory(zipPath, tempFolder);
+
+            string wgFolder = Path.Combine(tempFolder, "wg");
+            foreach (var dir in new[] { "mods", "res_mods" })
+            {
+                string source = Path.Combine(wgFolder, dir);
+                if (Directory.Exists(source))
+                {
+                    string dest = Path.Combine(gameFolder, dir, wotVersion);
+                    if (!Directory.Exists(dest))
+                        Directory.CreateDirectory(dest);
+                    CopyModContentToVersionedFolder(source, dest, wotVersion);
+                }
+            }
+
+            Directory.Delete(tempFolder, true);
+        }
+
         private async Task InstallPmodAsync(string gameFolder, string wotVersion)
         {
             string? pmodZipUrl = await GetPmodZipUrlAsync();
@@ -270,21 +328,22 @@ namespace WotModpackLoader
 
             Directory.Delete(tempFolder, true);
         }
-
-        private async Task InstallXvmAsync(string gameFolder, string wotVersion)
+        private async Task InstallMarksOnGunExtendedAsync(string gameFolder, string wotVersion)
         {
-            string? xvmZipUrl = await GetXvmZipUrlAsync();
-            if (string.IsNullOrEmpty(xvmZipUrl))
-                throw new Exception("Nie znaleziono linku do pobrania XVM!");
+            // Link do ZIP-a
+            string zipUrl = "https://down.wotspeak.org/mods_wg/756-mod_marksOnGunExtended.zip";
 
-            string tempFolder = Path.Combine(gameFolder, ".tempModpackXVM");
+            // Ścieżka tymczasowa
+            string tempFolder = Path.Combine(gameFolder, ".tempModpackMarksOnGunExtended");
             if (Directory.Exists(tempFolder))
                 Directory.Delete(tempFolder, true);
             Directory.CreateDirectory(tempFolder);
 
-            string zipPath = Path.Combine(tempFolder, "xvm.zip");
+            string zipPath = Path.Combine(tempFolder, "MarksOnGunExtended.zip");
+
+            // Pobierz ZIP
             using (var http = new HttpClient())
-            using (var resp = await http.GetAsync(xvmZipUrl))
+            using (var resp = await http.GetAsync(zipUrl))
             {
                 resp.EnsureSuccessStatusCode();
                 using (var fs = new FileStream(zipPath, FileMode.Create, FileAccess.Write))
@@ -293,19 +352,39 @@ namespace WotModpackLoader
                 }
             }
 
+            // Rozpakuj ZIP do temp
             ZipFile.ExtractToDirectory(zipPath, tempFolder);
 
-            string wgFolder = Path.Combine(tempFolder, "wg");
-            foreach (var dir in new[] { "mods", "res_mods" })
+            // Oczekiwana nazwa folderu z cyrlicą
+            string expectedFolderName = "Вариант от lebwa";
+            string? lebwaFolder = Directory
+                .GetDirectories(tempFolder, "*", SearchOption.AllDirectories)
+                .FirstOrDefault(dir => Path.GetFileName(dir).Equals(expectedFolderName, StringComparison.OrdinalIgnoreCase));
+
+            if (lebwaFolder == null)
             {
-                string source = Path.Combine(wgFolder, dir);
-                if (Directory.Exists(source))
-                {
-                    string dest = Path.Combine(gameFolder, dir, wotVersion);
-                    if (!Directory.Exists(dest))
-                        Directory.CreateDirectory(dest);
-                    CopyModContentToVersionedFolder(source, dest, wotVersion);
-                }
+                Directory.Delete(tempFolder, true);
+                throw new Exception("Nie znaleziono katalogu 'Вариант от lebwa' w archiwum!");
+            }
+
+            // Znajdź folder mods/<wotVersion> w środku 'Вариант от lebwa'
+            string modsVersionFolder = Path.Combine(lebwaFolder, "mods", wotVersion);
+            if (!Directory.Exists(modsVersionFolder))
+            {
+                Directory.Delete(tempFolder, true);
+                throw new Exception($"Nie znaleziono '{modsVersionFolder}' w archiwum!");
+            }
+
+            // Skopiuj całą zawartość mods/<wotVersion> do gameFolder\mods\<wotVersion>
+            string dest = Path.Combine(gameFolder, "mods", wotVersion);
+            Directory.CreateDirectory(dest);
+
+            foreach (var file in Directory.GetFiles(modsVersionFolder, "*", SearchOption.AllDirectories))
+            {
+                var relPath = Path.GetRelativePath(modsVersionFolder, file);
+                string outPath = Path.Combine(dest, relPath);
+                Directory.CreateDirectory(Path.GetDirectoryName(outPath)!);
+                File.Copy(file, outPath, true);
             }
 
             Directory.Delete(tempFolder, true);
@@ -425,6 +504,62 @@ namespace WotModpackLoader
             Directory.Delete(tempFolder, true);
         }
 
+        private async Task InstallExtendedBlacklistAsync(string gameFolder, string wotVersion)
+        {
+            string zipUrl = "https://github.com/Vretu-Dev/Modpack/raw/master/Mods/Extended_Blacklist.zip";
+            string tempFolder = Path.Combine(gameFolder, ".tempModpackExtBlacklist");
+            if (Directory.Exists(tempFolder))
+                Directory.Delete(tempFolder, true);
+            Directory.CreateDirectory(tempFolder);
+
+            string zipPath = Path.Combine(tempFolder, "Extended_Blacklist.zip");
+            using (var http = new HttpClient())
+            using (var resp = await http.GetAsync(zipUrl))
+            {
+                resp.EnsureSuccessStatusCode();
+                using (var fs = new FileStream(zipPath, FileMode.Create, FileAccess.Write))
+                {
+                    await resp.Content.CopyToAsync(fs);
+                }
+            }
+
+            ZipFile.ExtractToDirectory(zipPath, tempFolder);
+
+            // Szukamy folderu extended_blacklist gdziekolwiek w temp
+            var extBlacklistDir = Directory.GetDirectories(tempFolder, "extended_blacklist", SearchOption.AllDirectories).FirstOrDefault();
+            if (extBlacklistDir == null)
+            {
+                Directory.Delete(tempFolder, true);
+                throw new Exception("Nie znaleziono folderu 'extended_blacklist' w archiwum Extended_Blacklist.zip!");
+            }
+
+            string dest = Path.Combine(gameFolder, "mods", wotVersion, "extended_blacklist");
+            if (Directory.Exists(dest))
+                Directory.Delete(dest, true);
+
+            CopyDirectory(extBlacklistDir, dest);
+
+            Directory.Delete(tempFolder, true);
+        }
+
+        private async Task<string?> GetXvmZipUrlAsync()
+        {
+            const string xvmPage = "https://modxvm.com/en/download-xvm/";
+            using (var http = new HttpClient())
+            {
+                var html = await http.GetStringAsync(xvmPage);
+                var doc = new HtmlAgilityPack.HtmlDocument();
+                doc.LoadHtml(html);
+                var node = doc.DocumentNode
+                    .SelectSingleNode("//div[contains(@class,'downloads-info')]//a[contains(@href,'.zip')]");
+                if (node == null)
+                    return null;
+
+                var attr = node.Attributes["href"];
+                return attr?.Value;
+            }
+        }
+
         private async Task<string?> GetPmodZipUrlAsync()
         {
             const string url = "https://wotmods.net/world-of-tanks-mods/user-interface/pmod/";
@@ -447,24 +582,6 @@ namespace WotModpackLoader
                     }
                 }
                 return null;
-            }
-        }
-
-        private async Task<string?> GetXvmZipUrlAsync()
-        {
-            const string xvmPage = "https://modxvm.com/en/download-xvm/";
-            using (var http = new HttpClient())
-            {
-                var html = await http.GetStringAsync(xvmPage);
-                var doc = new HtmlAgilityPack.HtmlDocument();
-                doc.LoadHtml(html);
-                var node = doc.DocumentNode
-                    .SelectSingleNode("//div[contains(@class,'downloads-info')]//a[contains(@href,'.zip')]");
-                if (node == null)
-                    return null;
-
-                var attr = node.Attributes["href"];
-                return attr?.Value;
             }
         }
 
@@ -493,6 +610,25 @@ namespace WotModpackLoader
         private void CopyDirectory(string sourceDir, string destinationDir)
         {
             Directory.CreateDirectory(destinationDir);
+
+            // Zabezpieczenie przed mods/mods i res_mods/res_mods
+            var srcName = Path.GetFileName(sourceDir).ToLowerInvariant();
+            var dstName = Path.GetFileName(destinationDir).ToLowerInvariant();
+            if ((srcName == "mods" && dstName == "mods") || (srcName == "res_mods" && dstName == "res_mods"))
+            {
+                foreach (string file in Directory.GetFiles(sourceDir))
+                {
+                    string destFile = Path.Combine(destinationDir, Path.GetFileName(file));
+                    File.Copy(file, destFile, true);
+                }
+                foreach (string dir in Directory.GetDirectories(sourceDir))
+                {
+                    CopyDirectory(dir, Path.Combine(destinationDir, Path.GetFileName(dir)));
+                }
+                return;
+            }
+
+            // Standardowe kopiowanie
             foreach (string file in Directory.GetFiles(sourceDir))
             {
                 string destFile = Path.Combine(destinationDir, Path.GetFileName(file));
