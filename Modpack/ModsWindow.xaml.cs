@@ -330,8 +330,8 @@ namespace WotModpackLoader
         }
         private async Task InstallMarksOnGunExtendedAsync(string gameFolder, string wotVersion)
         {
-            // Link do ZIP-a
-            string zipUrl = "https://down.wotspeak.org/mods_wg/756-mod_marksOnGunExtended.zip";
+            // RAW link do ZIP-a na GitHubie
+            string zipUrl = "https://github.com/Vretu-Dev/Modpack/raw/master/Mods/756-mod_marksOnGunExtended.zip";
 
             // Ścieżka tymczasowa
             string tempFolder = Path.Combine(gameFolder, ".tempModpackMarksOnGunExtended");
@@ -355,8 +355,8 @@ namespace WotModpackLoader
             // Rozpakuj ZIP do temp
             ZipFile.ExtractToDirectory(zipPath, tempFolder);
 
-            // Oczekiwana nazwa folderu z cyrlicą
-            string expectedFolderName = "Вариант от lebwa";
+            // Szukaj dokładnie folderu "Вариант от lebwa"
+            string expectedFolderName = "lebwa";
             string? lebwaFolder = Directory
                 .GetDirectories(tempFolder, "*", SearchOption.AllDirectories)
                 .FirstOrDefault(dir => Path.GetFileName(dir).Equals(expectedFolderName, StringComparison.OrdinalIgnoreCase));
@@ -367,7 +367,7 @@ namespace WotModpackLoader
                 throw new Exception("Nie znaleziono katalogu 'Вариант от lebwa' w archiwum!");
             }
 
-            // Znajdź folder mods/<wotVersion> w środku 'Вариант от lebwa'
+            // Znajdź katalog mods/<wotVersion> w środku 'Вариант от lebwa'
             string modsVersionFolder = Path.Combine(lebwaFolder, "mods", wotVersion);
             if (!Directory.Exists(modsVersionFolder))
             {
