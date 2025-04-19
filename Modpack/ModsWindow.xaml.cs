@@ -7,7 +7,7 @@ using System.Windows;
 using HtmlAgilityPack;
 using PuppeteerSharp;
 using System.Linq;
-using System.Text.Json; // Dodane do obsługi JSON
+using System.Text.Json;
 
 namespace WotModpackLoader
 {
@@ -50,6 +50,7 @@ namespace WotModpackLoader
                 if (XvmCheck.IsChecked == true) totalSteps++;
                 if (PmodCheck.IsChecked == true) totalSteps++;
                 if (BattleEquipmentCheck.IsChecked == true) totalSteps++;
+                if (ClanRewardsCheck.IsChecked == true) totalSteps++;
 
                 int currentStep = 0;
                 if (totalSteps == 0)
@@ -86,6 +87,14 @@ namespace WotModpackLoader
                     currentStep++;
                     InstallProgressBar.Value = (double)currentStep / totalSteps * 100;
                 }
+                if (ClanRewardsCheck.IsChecked == true)
+                {
+                    InstallProgressBar.IsIndeterminate = true;
+                    await InstallClanRewardsAutoClaimAsync(gameFolder, wotVersion);
+                    InstallProgressBar.IsIndeterminate = false;
+                    currentStep++;
+                    InstallProgressBar.Value = (double)currentStep / totalSteps * 100;
+                }
 
                 InstallProgressBar.Value = 100;
                 await Task.Delay(400);
@@ -103,10 +112,6 @@ namespace WotModpackLoader
             }
         }
 
-        /// <summary>
-        /// Usuwa katalogi mods i res_mods z folderu gry oraz tworzy je wraz z podfolderem o nazwie wersji WoT.
-        /// Zwraca string z nazwą folderu wersji (np. "1.28.1.0").
-        /// </summary>
         private async Task<string> RemoveAndPrepareModsFoldersAsync(string gameFolder)
         {
             string modsFolder = Path.Combine(gameFolder, "mods");
@@ -134,16 +139,12 @@ namespace WotModpackLoader
             // Pobierz wersję gry
             string version = await GetWotVersionAsync();
 
-            // Utwórz strukturę: mods\<wersja> i res_mods\<wersja>
             Directory.CreateDirectory(Path.Combine(modsFolder, version));
             Directory.CreateDirectory(Path.Combine(resModsFolder, version));
 
             return version;
         }
 
-        /// <summary>
-        /// Pobiera wersję WoT z pliku JSON i zwraca string w formacie "1.28.1.0"
-        /// </summary>
         private async Task<string> GetWotVersionAsync()
         {
             string url = "https://aslain.com/update_checker/WoT_installer.json";
@@ -155,7 +156,6 @@ namespace WotModpackLoader
                     var version = doc.RootElement.GetProperty("installer").GetProperty("version").GetString();
                     if (!string.IsNullOrEmpty(version))
                     {
-                        // Usuń sufiks po ostatniej kropce
                         int lastDot = version.LastIndexOf('.');
                         if (lastDot > 0)
                         {
@@ -169,19 +169,21 @@ namespace WotModpackLoader
         }
 
         /// <summary>
-        /// Kopiuje zawartość folderu mods do folderu wersji, unikając podwójnego zagnieżdżenia wersji.
+        /// Kopiuje zawartość folderu mods do folderu wersji, ignorując podfoldery z innymi wersjami niż aktualna.
         /// </summary>
         private void CopyModContentToVersionedFolder(string sourceMods, string destVersionFolder, string wotVersion)
         {
-            string innerVersion = Path.Combine(sourceMods, wotVersion);
-            if (Directory.Exists(innerVersion))
+            var subdirs = Directory.GetDirectories(sourceMods);
+            var versionFolder = subdirs.FirstOrDefault(d => Path.GetFileName(d) == wotVersion);
+
+            if (versionFolder != null)
             {
-                foreach (string dir in Directory.GetDirectories(innerVersion))
+                foreach (string dir in Directory.GetDirectories(versionFolder))
                 {
                     string destDir = Path.Combine(destVersionFolder, Path.GetFileName(dir));
                     CopyDirectory(dir, destDir);
                 }
-                foreach (string file in Directory.GetFiles(innerVersion))
+                foreach (string file in Directory.GetFiles(versionFolder))
                 {
                     string destFile = Path.Combine(destVersionFolder, Path.GetFileName(file));
                     File.Copy(file, destFile, true);
@@ -189,9 +191,12 @@ namespace WotModpackLoader
             }
             else
             {
-                foreach (string dir in Directory.GetDirectories(sourceMods))
+                foreach (string dir in subdirs)
                 {
-                    string destDir = Path.Combine(destVersionFolder, Path.GetFileName(dir));
+                    string dirName = Path.GetFileName(dir);
+                    if (IsVersionString(dirName) && dirName != wotVersion)
+                        continue;
+                    string destDir = Path.Combine(destVersionFolder, dirName);
                     CopyDirectory(dir, destDir);
                 }
                 foreach (string file in Directory.GetFiles(sourceMods))
@@ -200,6 +205,14 @@ namespace WotModpackLoader
                     File.Copy(file, destFile, true);
                 }
             }
+        }
+
+        /// <summary>
+        /// Sprawdza, czy string wygląda jak wersja WoT (np. 1.28.1.0)
+        /// </summary>
+        private bool IsVersionString(string name)
+        {
+            return name.Count(c => c == '.') == 3 && name.All(c => char.IsDigit(c) || c == '.');
         }
 
         private async Task InstallPmodAsync(string gameFolder, string wotVersion)
@@ -324,6 +337,26 @@ namespace WotModpackLoader
             Directory.Delete(tempFolder, true);
         }
 
+        private async Task InstallClanRewardsAutoClaimAsync(string gameFolder, string wotVersion)
+        {
+            string modUrl = "https://github.com/Vretu-Dev/Modpack/raw/master/Mods/mod_wb_auto_claim_clan_reward.wotmod";
+            string destDir = Path.Combine(gameFolder, "mods", wotVersion);
+            Directory.CreateDirectory(destDir);
+
+            string modFileName = "mod_wb_auto_claim_clan_reward.wotmod";
+            string destFilePath = Path.Combine(destDir, modFileName);
+
+            using (var http = new HttpClient())
+            using (var resp = await http.GetAsync(modUrl))
+            {
+                resp.EnsureSuccessStatusCode();
+                using (var fs = new FileStream(destFilePath, FileMode.Create, FileAccess.Write))
+                {
+                    await resp.Content.CopyToAsync(fs);
+                }
+            }
+        }
+
         private async Task<string?> GetPmodZipUrlAsync()
         {
             const string url = "https://wotmods.net/world-of-tanks-mods/user-interface/pmod/";
@@ -333,16 +366,13 @@ namespace WotModpackLoader
                 var doc = new HtmlAgilityPack.HtmlDocument();
                 doc.LoadHtml(html);
 
-                // Znajdź <div class="download-attachments">
                 var div = doc.DocumentNode.SelectSingleNode("//div[contains(@class, 'download-attachments')]");
                 if (div != null)
                 {
-                    // Znajdź pierwszy <a href=...>
                     var a = div.SelectSingleNode(".//a[@href]");
                     if (a != null)
                     {
                         var href = a.GetAttributeValue("href", "");
-                        // Jeśli to link względny, popraw na absolutny
                         if (href.StartsWith("/"))
                             href = "https://wotmods.net" + href;
                         return href;

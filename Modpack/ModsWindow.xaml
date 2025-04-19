@@ -83,7 +83,7 @@
             <CheckBox Content="XVM - Rozbudowany interfejs (Wymagany)" Name="XvmCheck" IsChecked="True"/>
             <CheckBox Content="PMOD (Wskaźnik penetracji)" Name="PmodCheck" IsChecked="True"/>
             <CheckBox Content="Battle Equipment (widoczność wyposażenia w czasie bitwy)" Name="BattleEquipmentCheck" IsChecked="True"/>
-            <CheckBox Content="Odtwarzacz powtórek" Name="ReplaysCheck" IsChecked="True"/>
+            <CheckBox Content="Clan rewards auto claim (Automatyczne odbieranie misji na Carro)" Name="ClanRewardsCheck" IsChecked="True"/>
             <ProgressBar x:Name="InstallProgressBar"
                          Style="{StaticResource RoundedProgressBar}"
                          Minimum="0"
