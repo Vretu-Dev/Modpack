@@ -7,6 +7,7 @@ using System.Windows;
 using HtmlAgilityPack;
 using PuppeteerSharp;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Text.Json;
 
 namespace WotModpackLoader
@@ -51,6 +52,7 @@ namespace WotModpackLoader
                 if (PmodCheck.IsChecked == true) totalSteps++;
                 if (BattleEquipmentCheck.IsChecked == true) totalSteps++;
                 if (ClanRewardsCheck.IsChecked == true) totalSteps++;
+                if (TechTreeCheck.IsChecked == true) totalSteps++;
 
                 int currentStep = 0;
                 if (totalSteps == 0)
@@ -95,6 +97,19 @@ namespace WotModpackLoader
                     currentStep++;
                     InstallProgressBar.Value = (double)currentStep / totalSteps * 100;
                 }
+                if (TechTreeCheck.IsChecked == true)
+                {
+                    InstallProgressBar.IsIndeterminate = true;
+                    await InstallTechTreeAsync(gameFolder, wotVersion);
+                    InstallProgressBar.IsIndeterminate = false;
+                    currentStep++;
+                    InstallProgressBar.Value = (double)currentStep / totalSteps * 100;
+                }
+
+
+                string modsPath = Path.Combine(gameFolder, "mods", wotVersion);
+                RemoveOlderModVersions(modsPath, "me.poliroid.modslistapi");
+                RemoveOlderModVersions(modsPath, "izeberg.modssettingsapi");
 
                 InstallProgressBar.Value = 100;
                 await Task.Delay(400);
@@ -357,6 +372,59 @@ namespace WotModpackLoader
             }
         }
 
+        private async Task InstallTechTreeAsync(string gameFolder, string wotVersion)
+        {
+            string zipUrl = "https://github.com/Vretu-Dev/Modpack/raw/master/Mods/TechTree.zip";
+            string tempFolder = Path.Combine(gameFolder, ".tempModpackTechTree");
+            if (Directory.Exists(tempFolder))
+                Directory.Delete(tempFolder, true);
+            Directory.CreateDirectory(tempFolder);
+
+            string zipPath = Path.Combine(tempFolder, "TechTree.zip");
+            using (var http = new HttpClient())
+            using (var resp = await http.GetAsync(zipUrl))
+            {
+                resp.EnsureSuccessStatusCode();
+                using (var fs = new FileStream(zipPath, FileMode.Create, FileAccess.Write))
+                {
+                    await resp.Content.CopyToAsync(fs);
+                }
+            }
+
+            ZipFile.ExtractToDirectory(zipPath, tempFolder);
+
+            // Skopiuj configs do mods/configs
+            string configsSrc = Path.Combine(tempFolder, "configs");
+            string configsDest = Path.Combine(gameFolder, "mods", "configs");
+            if (Directory.Exists(configsSrc))
+            {
+                if (Directory.Exists(configsDest))
+                    Directory.Delete(configsDest, true);
+                CopyDirectory(configsSrc, configsDest);
+            }
+
+            // Skopiuj zawartość folderu z wersją (np. 1.28.0.0) do mods/wotVersion
+            string? versionDir = Directory.GetDirectories(tempFolder)
+            .FirstOrDefault(d => IsVersionString(Path.GetFileName(d)));
+            if (versionDir != null)
+            {
+                string dest = Path.Combine(gameFolder, "mods", wotVersion);
+                if (!Directory.Exists(dest))
+                    Directory.CreateDirectory(dest);
+
+                foreach (var file in Directory.GetFiles(versionDir))
+                {
+                    File.Copy(file, Path.Combine(dest, Path.GetFileName(file)), true);
+                }
+                foreach (var dir in Directory.GetDirectories(versionDir))
+                {
+                    CopyDirectory(dir, Path.Combine(dest, Path.GetFileName(dir)));
+                }
+            }
+
+            Directory.Delete(tempFolder, true);
+        }
+
         private async Task<string?> GetPmodZipUrlAsync()
         {
             const string url = "https://wotmods.net/world-of-tanks-mods/user-interface/pmod/";
@@ -434,6 +502,37 @@ namespace WotModpackLoader
             {
                 string destDir = Path.Combine(destinationDir, Path.GetFileName(dir));
                 CopyDirectory(dir, destDir);
+            }
+        }
+        private void RemoveOlderModVersions(string modsFolder, string modPrefix)
+        {
+            if (!Directory.Exists(modsFolder))
+                return;
+
+            var files = Directory.GetFiles(modsFolder, $"{modPrefix}_*.wotmod");
+            if (files.Length <= 1) return;
+
+            // Wydobądź wersje i posortuj malejąco
+            var versionRegex = new Regex(Regex.Escape(modPrefix) + @"_(\d+\.\d+(\.\d+)?).wotmod$", RegexOptions.IgnoreCase);
+
+            var versionedFiles = files.Select(f =>
+            {
+                var m = versionRegex.Match(Path.GetFileName(f));
+                return new
+                {
+                    FilePath = f,
+                    Version = m.Success ? m.Groups[1].Value : ""
+                };
+            })
+            .Where(x => !string.IsNullOrEmpty(x.Version))
+            .OrderByDescending(x => new Version(x.Version))
+            .ToList();
+
+            // Zostaw najnowszy, usuń resztę
+            foreach (var oldFile in versionedFiles.Skip(1))
+            {
+                try { File.Delete(oldFile.FilePath); }
+                catch { /* opcjonalnie obsłuż błąd */ }
             }
         }
     }
