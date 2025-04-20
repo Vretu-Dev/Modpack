@@ -124,7 +124,6 @@ namespace WotModpackLoader
                     InstallProgressBar.Value = (double)currentStep / totalSteps * 100;
                 }
 
-
                 string modsPath = Path.Combine(gameFolder, "mods", wotVersion);
                 RemoveOlderModVersions(modsPath, "me.poliroid.modslistapi");
                 RemoveOlderModVersions(modsPath, "izeberg.modssettingsapi");
@@ -248,6 +247,74 @@ namespace WotModpackLoader
             return name.Count(c => c == '.') == 3 && name.All(c => char.IsDigit(c) || c == '.');
         }
 
+        /// <summary>
+        /// Kopiuje wszystkie foldery configs/config do odpowiednich miejsc na dysku
+        /// - mods/configs jeśli źródło NIE jest z res_mods
+        /// - res_mods/configs jeśli źródło NIE jest z mods
+        /// - res_mods/mods/configs jeśli taki układ jest w archiwum (z zachowaniem struktury z archiwum)
+        /// </summary>
+        private void CopyConfigsToModsAndResMods(string tempFolder, string gameFolder)
+        {
+            // 1. configs/config w mods/* --> mods/configs
+            var configsInMods = Directory.GetDirectories(tempFolder, "*", SearchOption.AllDirectories)
+                .Where(dir =>
+                {
+                    var name = Path.GetFileName(dir).ToLowerInvariant();
+                    var path = dir.Replace('\\', '/').ToLowerInvariant();
+                    return (name == "configs" || name == "config")
+                        && path.Contains("/mods/")
+                        && !path.Contains("/res_mods/");
+                })
+                .ToList();
+
+            foreach (var configDir in configsInMods)
+            {
+                string modsConfigs = Path.Combine(gameFolder, "mods", "configs");
+                // NIE USUWAJ, tylko kopiuj (nadpisuj)
+                CopyDirectory(configDir, modsConfigs);
+            }
+
+            // 2. configs/config w res_mods/* --> res_mods/configs
+            var configsInResMods = Directory.GetDirectories(tempFolder, "*", SearchOption.AllDirectories)
+                .Where(dir =>
+                {
+                    var name = Path.GetFileName(dir).ToLowerInvariant();
+                    var path = dir.Replace('\\', '/').ToLowerInvariant();
+                    return (name == "configs" || name == "config")
+                        && path.Contains("/res_mods/")
+                        && !path.Contains("/mods/");
+                })
+                .ToList();
+
+            foreach (var configDir in configsInResMods)
+            {
+                string resModsConfigs = Path.Combine(gameFolder, "res_mods", "configs");
+                CopyDirectory(configDir, resModsConfigs);
+            }
+
+            // 3. configs/config w res_mods/mods/* --> res_mods/mods/configs (z zachowaniem struktury)
+            var configsInResModsMods = Directory.GetDirectories(tempFolder, "*", SearchOption.AllDirectories)
+                .Where(dir =>
+                {
+                    var name = Path.GetFileName(dir).ToLowerInvariant();
+                    var path = dir.Replace('\\', '/').ToLowerInvariant();
+                    return (name == "configs" || name == "config")
+                        && path.Contains("/res_mods/mods/");
+                })
+                .ToList();
+
+            foreach (var configDir in configsInResModsMods)
+            {
+                var startIdx = configDir.Replace('\\', '/').ToLowerInvariant().IndexOf("/res_mods/mods/");
+                if (startIdx >= 0)
+                {
+                    var rel = configDir.Replace('\\', '/').Substring(startIdx + 13); // po "res_mods/mods/"
+                    string dest = Path.Combine(gameFolder, "res_mods", "mods", rel);
+                    CopyDirectory(configDir, dest);
+                }
+            }
+        }
+
         private async Task InstallXvmAsync(string gameFolder, string wotVersion)
         {
             string? xvmZipUrl = await GetXvmZipUrlAsync();
@@ -325,6 +392,9 @@ namespace WotModpackLoader
             {
                 throw new Exception("Nie znaleziono folderu 'mods' w paczce PMOD.");
             }
+
+            // Kopiuj configs zgodnie z zasadami do mods/configs, res_mods/configs, res_mods/mods/configs
+            CopyConfigsToModsAndResMods(tempFolder, gameFolder);
 
             Directory.Delete(tempFolder, true);
         }
@@ -428,6 +498,8 @@ namespace WotModpackLoader
                 throw new Exception("Nie znaleziono folderu 'mods' w paczce Battle Equipment.");
             }
 
+            CopyConfigsToModsAndResMods(tempFolder, gameFolder);
+
             Directory.Delete(tempFolder, true);
         }
 
@@ -472,15 +544,8 @@ namespace WotModpackLoader
 
             ZipFile.ExtractToDirectory(zipPath, tempFolder);
 
-            // Skopiuj configs do mods/configs
-            string configsSrc = Path.Combine(tempFolder, "configs");
-            string configsDest = Path.Combine(gameFolder, "mods", "configs");
-            if (Directory.Exists(configsSrc))
-            {
-                if (Directory.Exists(configsDest))
-                    Directory.Delete(configsDest, true);
-                CopyDirectory(configsSrc, configsDest);
-            }
+            // Poprawka: kopiowanie configs/config do mods/configs, res_mods/configs, res_mods/mods/configs
+            CopyConfigsToModsAndResMods(tempFolder, gameFolder);
 
             // Skopiuj zawartość folderu z wersją (np. 1.28.0.0) do mods/wotVersion
             string? versionDir = Directory.GetDirectories(tempFolder)
@@ -640,6 +705,7 @@ namespace WotModpackLoader
                 CopyDirectory(dir, destDir);
             }
         }
+
         private void RemoveOlderModVersions(string modsFolder, string modPrefix)
         {
             if (!Directory.Exists(modsFolder))

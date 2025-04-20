@@ -8,6 +8,9 @@
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
     <ApplicationIcon>modpack.ico</ApplicationIcon>
+    <Authors>Vretu</Authors>
+    <Product>NewMulti2k $(AssemblyName)</Product>
+    <AssemblyName>NewMulti2k $(MSBuildProjectName)</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
