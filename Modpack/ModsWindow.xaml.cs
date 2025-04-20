@@ -201,11 +201,11 @@ namespace WotModpackLoader
             }
         }
 
+        // Pomocnicza funkcja
         private bool IsVersionString(string name)
         {
             return name.Count(c => c == '.') == 3 && name.All(c => char.IsDigit(c) || c == '.');
         }
-
         /// <summary>
         /// Kopiuje całą zawartość mods/ i res_mods/ z archiwum do gry:
         /// - wszystko z mods/<wersja_gry> → mods/<wersja_gry>
