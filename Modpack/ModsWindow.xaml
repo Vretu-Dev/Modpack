@@ -5,41 +5,155 @@
         Height="470" Width="550"
         ResizeMode="NoResize"
         WindowStartupLocation="CenterScreen"
-        Background="#FAFAFA">
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent">
     <Window.Resources>
-        <DropShadowEffect x:Key="ShadowEffect" BlurRadius="10" ShadowDepth="3" Direction="270" Color="#22000000" />
+        <DropShadowEffect x:Key="ShadowEffect" BlurRadius="25" ShadowDepth="0" Color="#AA000000"/>
+
+        <!-- Kwadratowy, niebieski CheckBox z animacją zaznaczania/odznaczania -->
+        <Style TargetType="CheckBox">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="Margin" Value="0,8,0,8"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="CheckBox">
+                        <Grid>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <Border x:Name="box"
+                                Width="20" Height="20"
+                                Margin="0,0,8,0"
+                                BorderThickness="2"
+                                BorderBrush="#1A73E8"
+                                Background="Transparent"
+                                CornerRadius="5"
+                                VerticalAlignment="Center"
+                                SnapsToDevicePixels="True">
+                                    <Grid>
+                                        <Rectangle x:Name="fill"
+                                           Fill="#1A73E8"
+                                           RadiusX="3" RadiusY="3"
+                                           Opacity="0"
+                                           RenderTransformOrigin="0.5,0.5">
+                                            <Rectangle.RenderTransform>
+                                                <ScaleTransform ScaleX="0.6" ScaleY="0.6"/>
+                                            </Rectangle.RenderTransform>
+                                        </Rectangle>
+                                    </Grid>
+                                </Border>
+                                <ContentPresenter VerticalAlignment="Center" RecognizesAccessKey="True"/>
+                            </StackPanel>
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name="CheckStates">
+                                    <VisualState x:Name="Unchecked">
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="fill"
+                                                     Storyboard.TargetProperty="Opacity"
+                                                     To="0" Duration="0:0:0.18"/>
+                                            <DoubleAnimation Storyboard.TargetName="fill"
+                                                     Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                                                     To="0.6" Duration="0:0:0.18"/>
+                                            <DoubleAnimation Storyboard.TargetName="fill"
+                                                     Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                                     To="0.6" Duration="0:0:0.18"/>
+                                        </Storyboard>
+                                    </VisualState>
+                                    <VisualState x:Name="Checked">
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="fill"
+                                                     Storyboard.TargetProperty="Opacity"
+                                                     To="1" Duration="0:0:0.18"/>
+                                            <DoubleAnimation Storyboard.TargetName="fill"
+                                                     Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                                                     To="1" Duration="0:0:0.18"/>
+                                            <DoubleAnimation Storyboard.TargetName="fill"
+                                                     Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                                     To="1" Duration="0:0:0.18"/>
+                                        </Storyboard>
+                                    </VisualState>
+                                </VisualStateGroup>
+                                <VisualStateGroup x:Name="CommonStates">
+                                    <VisualState x:Name="Normal"/>
+                                    <VisualState x:Name="MouseOver">
+                                        <Storyboard>
+                                            <ColorAnimation Storyboard.TargetName="box"
+                                                    Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)"
+                                                    To="#4285F4" Duration="0:0:0.2"/>
+                                        </Storyboard>
+                                    </VisualState>
+                                    <VisualState x:Name="Disabled">
+                                        <Storyboard>
+                                            <ColorAnimation Storyboard.TargetName="box"
+                                                    Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)"
+                                                    To="#FF9E9E9E" Duration="0:0:0.2"/>
+                                            <ColorAnimation Storyboard.TargetName="fill"
+                                                    Storyboard.TargetProperty="(Shape.Fill).(SolidColorBrush.Color)"
+                                                    To="#FFB0BEC5" Duration="0:0:0.2"/>
+                                        </Storyboard>
+                                    </VisualState>
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Button styl zgodny z MainWindow -->
         <Style TargetType="Button">
             <Setter Property="FontSize" Value="15"/>
-            <Setter Property="Background" Value="#FF1A73E8"/>
             <Setter Property="Foreground" Value="White"/>
-            <Setter Property="BorderBrush" Value="#FF185ABC"/>
-            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Background" Value="#FF3A3F4B"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Padding" Value="10,4"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Focusable" Value="False"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
                                 CornerRadius="8"
-                                Effect="{StaticResource ShadowEffect}">
+                                SnapsToDevicePixels="True">
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name="CommonStates">
+                                    <VisualState x:Name="Normal"/>
+                                    <VisualState x:Name="MouseOver">
+                                        <Storyboard>
+                                            <ColorAnimation Storyboard.TargetName="border"
+                                                    Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                    To="#FF505866" Duration="0:0:0.2"/>
+                                        </Storyboard>
+                                    </VisualState>
+                                    <VisualState x:Name="Pressed">
+                                        <Storyboard>
+                                            <ColorAnimation Storyboard.TargetName="border"
+                                                    Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                    To="#FF2E3540" Duration="0:0:0.1"/>
+                                        </Storyboard>
+                                    </VisualState>
+                                    <VisualState x:Name="Disabled">
+                                        <Storyboard>
+                                            <ColorAnimation Storyboard.TargetName="border"
+                                                    Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                    To="#FF2A2F38" Duration="0:0:0.2"/>
+                                        </Storyboard>
+                                    </VisualState>
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
         </Style>
-        <Style TargetType="CheckBox">
-            <Setter Property="FontSize" Value="15"/>
-            <Setter Property="Margin" Value="0,8,0,8"/>
-        </Style>
-        <!-- Styl dla zaokrąglonego ProgressBar -->
         <Style x:Key="RoundedProgressBar" TargetType="ProgressBar">
             <Setter Property="Height" Value="20"/>
             <Setter Property="Foreground" Value="#FF1A73E8"/>
-            <Setter Property="Background" Value="#E8F0FE"/>
+            <Setter Property="Background" Value="#FF5A5A5A"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ProgressBar">
@@ -77,27 +191,78 @@
             </Setter>
         </Style>
     </Window.Resources>
-    <Border CornerRadius="14" Padding="16" Margin="14" Background="White" Effect="{StaticResource ShadowEffect}">
-        <StackPanel>
-            <TextBlock Text="Wybierz mody do zainstalowania:" FontSize="18" FontWeight="Bold" Foreground="#185ABC" Margin="0,0,0,14"/>
-            <CheckBox Content="XVM - Rozbudowany interfejs (Wymagany)" Name="XvmCheck" IsChecked="True"/>
-            <CheckBox Content="PMOD (Wskaźnik penetracji)" Name="PmodCheck" IsChecked="True"/>
-            <CheckBox Content="Marks Of Excellence Calculator (pokazuje aktualny % biegłości)" Name="MarksOnGunExtendedCheck" IsChecked="True"/>
-            <CheckBox Content="Battle Equipment (widoczność wyposażenia w czasie bitwy)" Name="BattleEquipmentCheck" IsChecked="True"/>
-            <CheckBox Content="Clan rewards auto claim (Automatyczne odbieranie misji na Carro)" Name="ClanRewardsCheck" IsChecked="True"/>
-            <CheckBox Content="TechTree (rozszerzone drzewko technologiczne)" Name="TechTreeCheck" IsChecked="True"/>
-            <CheckBox Content="Extended Blacklist" Name="ExtendedBlacklistCheck" IsChecked="True"/>
-            <ProgressBar x:Name="InstallProgressBar"
-                         Style="{StaticResource RoundedProgressBar}"
-                         Minimum="0"
-                         Maximum="100"
-                         Value="0"
-                         Margin="0,10,0,0"
-                         Visibility="Collapsed"/>
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,16,0,0">
-                <Button Content="Powróć" Width="120" Height="38" Margin="0,0,16,0" Click="BackButton_Click"/>
-                <Button Content="Zainstaluj wybrane mody" Width="220" Height="38" Click="InstallButton_Click"/>
-            </StackPanel>
-        </StackPanel>
-    </Border>
+    <Grid>
+        <Border Background="#CC1E1E1E" CornerRadius="14" Margin="14" Effect="{StaticResource ShadowEffect}">
+            <Grid>
+                <!-- Pasek tytułu z przyciskiem zamknięcia -->
+                <Grid Height="30" VerticalAlignment="Top" Background="Transparent" MouseDown="Window_MouseDown">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid Grid.Column="0" Background="Transparent"/>
+                    <Button Grid.Column="1" Content="✕" Width="30" Height="24"
+                            Margin="4"
+                            Click="ModsWindow_Closed"
+                            Background="Transparent"
+                            Foreground="White"
+                            BorderThickness="0"
+                            FontWeight="Bold"
+                            Cursor="Hand">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Background" Value="Transparent"/>
+                                <Setter Property="Foreground" Value="White"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}"
+                                                    CornerRadius="4">
+                                                <ContentPresenter HorizontalAlignment="Center"
+                                                                  VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#FF5A5A5A"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </Grid>
+                <StackPanel Margin="16,40,16,16">
+                    <TextBlock Text="Wybierz mody do zainstalowania:" FontSize="18" FontWeight="Bold" Margin="0,0,0,14">
+                        <TextBlock.Foreground>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                <GradientStop Color="#6EA8FE" Offset="0"/>
+                                <GradientStop Color="#3C7FF8" Offset="0.5"/>
+                                <GradientStop Color="#1676FF" Offset="1"/>
+                            </LinearGradientBrush>
+                        </TextBlock.Foreground>
+                    </TextBlock>
+                    <CheckBox Content="XVM - Rozbudowany interfejs (wymagany)" Name="XvmCheck" IsChecked="True"/>
+                    <CheckBox Content="PMOD (wskaźnik penetracji)" Name="PmodCheck" IsChecked="True"/>
+                    <CheckBox Content="Marks Of Excellence Calculator (pokazuje aktualny % biegłości)" Name="MarksOnGunExtendedCheck" IsChecked="True"/>
+                    <CheckBox Content="Battle Equipment (widoczność wyposażenia w czasie bitwy)" Name="BattleEquipmentCheck" IsChecked="True"/>
+                    <CheckBox Content="Clan Rewards Auto Claim (automatyczne odbieranie misji na Carro)" Name="ClanRewardsCheck" IsChecked="True"/>
+                    <CheckBox Content="TechTree (rozszerzone drzewko technologiczne)" Name="TechTreeCheck" IsChecked="True"/>
+                    <CheckBox Content="Extended Blacklist (większa lista ignorowanych)" Name="ExtendedBlacklistCheck" IsChecked="True"/>
+                    <ProgressBar x:Name="InstallProgressBar"
+                                 Style="{StaticResource RoundedProgressBar}"
+                                 Minimum="0"
+                                 Maximum="100"
+                                 Value="0"
+                                 Margin="0,10,0,0"
+                                 Visibility="Collapsed"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,16,0,0">
+                        <Button Content="Powróć" Width="120" Height="38" Margin="0,0,16,0" Click="BackButton_Click"/>
+                        <Button Content="Zainstaluj wybrane mody" Width="220" Height="38" Click="InstallButton_Click"/>
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
 </Window>

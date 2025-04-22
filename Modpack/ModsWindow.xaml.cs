@@ -9,6 +9,7 @@ using PuppeteerSharp;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Text.Json;
+using System.Windows.Input;
 
 namespace WotModpackLoader
 {
@@ -31,6 +32,14 @@ namespace WotModpackLoader
             if (this.Owner is MainWindow mainWindow)
                 mainWindow.Show();
             this.Close();
+        }
+
+        private void Window_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.LeftButton == MouseButtonState.Pressed)
+            {
+                this.DragMove();
+            }
         }
 
         private async void InstallButton_Click(object sender, RoutedEventArgs e)

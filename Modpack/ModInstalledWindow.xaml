@@ -5,11 +5,29 @@
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize"
         SizeToContent="WidthAndHeight"
-        Background="#f9f9f9"
         WindowStyle="None"
         AllowsTransparency="True"
+        Background="Transparent"
         ShowInTaskbar="False">
-	<Border Margin="16" CornerRadius="16" Background="White" BorderBrush="#2196F3" BorderThickness="7" >
+	<Border Margin="16"
+            CornerRadius="24"
+            BorderThickness="7"
+            x:Name="MainBorder"
+            Opacity="0"
+            RenderTransformOrigin="0.5,0.5">
+		<Border.RenderTransform>
+			<ScaleTransform ScaleX="0.93" ScaleY="0.93"/>
+		</Border.RenderTransform>
+		<Border.BorderBrush>
+			<LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+				<GradientStop Color="#2196F3" Offset="0"/>
+				<GradientStop Color="#60D3FC" Offset="0.5"/>
+				<GradientStop Color="#3366FF" Offset="1"/>
+			</LinearGradientBrush>
+		</Border.BorderBrush>
+		<Border.Background>
+			<SolidColorBrush Color="#FF1E1E1E"/>
+		</Border.Background>
 		<StackPanel Margin="32" HorizontalAlignment="Center">
 			<Grid Width="48" Height="48" Margin="0,0,0,16">
 				<Ellipse Fill="#4CAF50" StrokeThickness="0">
@@ -23,17 +41,64 @@
                            VerticalAlignment="Top"
                            TextAlignment="Center" Width="42" Margin="1,-4,0,0"/>
 			</Grid>
-			<TextBlock Text="Mod został zainstalowany pomyślnie!" FontWeight="Bold" FontSize="18" Foreground="#333" TextAlignment="Center" Margin="0,0,0,8"/>
-			<TextBlock Text="Możesz już zamknąć to okno lub zainstalować kolejny mod." FontSize="14" Foreground="#666" TextAlignment="Center" Margin="0,0,0,24"/>
-			<Button Content="Zamknij" Width="100" Height="32" Background="#2196F3" Foreground="White" FontWeight="Bold" BorderThickness="0"
-                    Cursor="Hand" Click="Button_Click" HorizontalAlignment="Center">
+			<TextBlock Text="Mod został zainstalowany pomyślnie!" FontWeight="Bold" FontSize="18"
+                       Foreground="White" TextAlignment="Center" Margin="0,0,0,8"/>
+			<TextBlock Text="Możesz już zamknąć to okno lub zainstalować kolejny mod." FontSize="14"
+                       Foreground="#7A8BAE" TextAlignment="Center" Margin="0,0,0,24"/>
+			<Button Content="Zamknij"
+                    Width="100"
+                    Height="32"
+                    FontWeight="Bold"
+                    BorderThickness="0"
+                    Cursor="Hand"
+                    Click="Button_Click"
+                    HorizontalAlignment="Center">
 				<Button.Template>
 					<ControlTemplate TargetType="Button">
-						<Border Background="{TemplateBinding Background}" CornerRadius="8">
+						<Border x:Name="border"
+                                CornerRadius="8"
+                                Background="#2196F3">
 							<ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
 						</Border>
+						<ControlTemplate.Triggers>
+							<!-- Animacja koloru tła na czerwono podczas najechania -->
+							<Trigger Property="IsMouseOver" Value="True">
+								<Trigger.EnterActions>
+									<BeginStoryboard>
+										<Storyboard>
+											<ColorAnimation
+                                                Storyboard.TargetName="border"
+                                                Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                To="#FFEB4D4D"
+                                                Duration="0:0:0.25"/>
+										</Storyboard>
+									</BeginStoryboard>
+								</Trigger.EnterActions>
+								<Trigger.ExitActions>
+									<BeginStoryboard>
+										<Storyboard>
+											<ColorAnimation
+                                                Storyboard.TargetName="border"
+                                                Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                To="#2196F3"
+                                                Duration="0:0:0.25"/>
+										</Storyboard>
+									</BeginStoryboard>
+								</Trigger.ExitActions>
+							</Trigger>
+							<!-- Kliknięcie: ciemniejszy czerwony -->
+							<Trigger Property="IsPressed" Value="True">
+								<Setter TargetName="border" Property="Background" Value="#FFD32F2F"/>
+							</Trigger>
+						</ControlTemplate.Triggers>
 					</ControlTemplate>
 				</Button.Template>
+				<Button.Background>
+					<SolidColorBrush Color="#2196F3"/>
+				</Button.Background>
+				<Button.Foreground>
+					<SolidColorBrush Color="White"/>
+				</Button.Foreground>
 			</Button>
 		</StackPanel>
 	</Border>
