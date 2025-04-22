@@ -1,15 +1,11 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.IO.Compression;
 using System.Net.Http;
-using System.Threading.Tasks;
 using System.Windows;
-using HtmlAgilityPack;
-using PuppeteerSharp;
-using System.Linq;
 using System.Text.RegularExpressions;
 using System.Text.Json;
 using System.Windows.Input;
+using System.Windows.Media.Animation;
 
 namespace WotModpackLoader
 {
@@ -28,10 +24,45 @@ namespace WotModpackLoader
 
         private void BackButton_Click(object sender, RoutedEventArgs e)
         {
-            this.Closed -= ModsWindow_Closed;
-            if (this.Owner is MainWindow mainWindow)
-                mainWindow.Show();
-            this.Close();
+            var sb = new Storyboard();
+
+            var opacityAnim = new DoubleAnimation(1, 0, new Duration(TimeSpan.FromMilliseconds(350)))
+            {
+                EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseIn }
+            };
+            Storyboard.SetTarget(opacityAnim, MainBorder);
+            Storyboard.SetTargetProperty(opacityAnim, new PropertyPath("Opacity"));
+
+            var scaleAnimX = new DoubleAnimation(1, 0.93, new Duration(TimeSpan.FromMilliseconds(350)))
+            {
+                EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseIn }
+            };
+            Storyboard.SetTarget(scaleAnimX, MainBorder);
+            Storyboard.SetTargetProperty(scaleAnimX, new PropertyPath("RenderTransform.ScaleX"));
+
+            var scaleAnimY = new DoubleAnimation(1, 0.93, new Duration(TimeSpan.FromMilliseconds(350)))
+            {
+                EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseIn }
+            };
+            Storyboard.SetTarget(scaleAnimY, MainBorder);
+            Storyboard.SetTargetProperty(scaleAnimY, new PropertyPath("RenderTransform.ScaleY"));
+
+            sb.Children.Add(opacityAnim);
+            sb.Children.Add(scaleAnimX);
+            sb.Children.Add(scaleAnimY);
+
+            sb.Completed += (s2, e2) =>
+            {
+                this.Closed -= ModsWindow_Closed;
+                if (this.Owner is MainWindow mainWindow)
+                {
+                    mainWindow.Show();
+                    mainWindow.RunAppearAnimation(); // <- wywołaj animację pojawiania się
+                }
+                this.Close();
+            };
+
+            sb.Begin();
         }
 
         private void Window_MouseDown(object sender, MouseButtonEventArgs e)

@@ -1,8 +1,8 @@
-﻿using System;
-using System.IO;
-using System.Linq;
+﻿using System.IO;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Animation;
 using Microsoft.Win32;
 
 namespace WotModpackLoader
@@ -35,12 +35,86 @@ namespace WotModpackLoader
                                    && Directory.Exists(GameFolderTextBox.Text);
         }
 
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            RunAppearAnimation();
+        }
+
+        public void RunAppearAnimation()
+        {
+            MainBorder.Opacity = 0;
+            ((ScaleTransform)MainBorder.RenderTransform).ScaleX = 0.93;
+            ((ScaleTransform)MainBorder.RenderTransform).ScaleY = 0.93;
+
+            var sb = new Storyboard();
+
+            var opacityAnim = new DoubleAnimation(0, 1, new Duration(TimeSpan.FromMilliseconds(340)))
+            {
+                EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseOut }
+            };
+            Storyboard.SetTarget(opacityAnim, MainBorder);
+            Storyboard.SetTargetProperty(opacityAnim, new PropertyPath("Opacity"));
+
+            var scaleAnimX = new DoubleAnimation(0.93, 1, new Duration(TimeSpan.FromMilliseconds(340)))
+            {
+                EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseOut }
+            };
+            Storyboard.SetTarget(scaleAnimX, MainBorder);
+            Storyboard.SetTargetProperty(scaleAnimX, new PropertyPath("RenderTransform.ScaleX"));
+
+            var scaleAnimY = new DoubleAnimation(0.93, 1, new Duration(TimeSpan.FromMilliseconds(340)))
+            {
+                EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseOut }
+            };
+            Storyboard.SetTarget(scaleAnimY, MainBorder);
+            Storyboard.SetTargetProperty(scaleAnimY, new PropertyPath("RenderTransform.ScaleY"));
+
+            sb.Children.Add(opacityAnim);
+            sb.Children.Add(scaleAnimX);
+            sb.Children.Add(scaleAnimY);
+
+            sb.Begin();
+        }
+
         private void NextButton_Click(object sender, RoutedEventArgs e)
         {
-            var modsWindow = new ModsWindow();
-            modsWindow.Owner = this;
-            modsWindow.Show();
-            this.Hide();
+            // Animacja zanikania i pomniejszania
+            var sb = new Storyboard();
+
+            var opacityAnim = new DoubleAnimation(1, 0, new Duration(TimeSpan.FromMilliseconds(350)))
+            {
+                EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseIn }
+            };
+            Storyboard.SetTarget(opacityAnim, MainBorder);
+            Storyboard.SetTargetProperty(opacityAnim, new PropertyPath("Opacity"));
+
+            var scaleAnimX = new DoubleAnimation(1, 0.93, new Duration(TimeSpan.FromMilliseconds(350)))
+            {
+                EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseIn }
+            };
+            Storyboard.SetTarget(scaleAnimX, MainBorder);
+            Storyboard.SetTargetProperty(scaleAnimX, new PropertyPath("RenderTransform.ScaleX"));
+
+            var scaleAnimY = new DoubleAnimation(1, 0.93, new Duration(TimeSpan.FromMilliseconds(350)))
+            {
+                EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseIn }
+            };
+            Storyboard.SetTarget(scaleAnimY, MainBorder);
+            Storyboard.SetTargetProperty(scaleAnimY, new PropertyPath("RenderTransform.ScaleY"));
+
+            sb.Children.Add(opacityAnim);
+            sb.Children.Add(scaleAnimX);
+            sb.Children.Add(scaleAnimY);
+
+            sb.Completed += (s, args) =>
+            {
+                var modsWindow = new ModsWindow();
+                modsWindow.Owner = this;
+                modsWindow.Show();
+                this.Hide();
+            };
+
+            sb.Begin();
         }
 
         private void Window_MouseDown(object sender, MouseButtonEventArgs e)

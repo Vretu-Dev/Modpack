@@ -22,20 +22,20 @@
                         <Grid>
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <Border x:Name="box"
-                                Width="20" Height="20"
-                                Margin="0,0,8,0"
-                                BorderThickness="2"
-                                BorderBrush="#1A73E8"
-                                Background="Transparent"
-                                CornerRadius="5"
-                                VerticalAlignment="Center"
-                                SnapsToDevicePixels="True">
+                                        Width="20" Height="20"
+                                        Margin="0,0,8,0"
+                                        BorderThickness="2"
+                                        BorderBrush="#1A73E8"
+                                        Background="Transparent"
+                                        CornerRadius="5"
+                                        VerticalAlignment="Center"
+                                        SnapsToDevicePixels="True">
                                     <Grid>
                                         <Rectangle x:Name="fill"
-                                           Fill="#1A73E8"
-                                           RadiusX="3" RadiusY="3"
-                                           Opacity="0"
-                                           RenderTransformOrigin="0.5,0.5">
+                                                   Fill="#1A73E8"
+                                                   RadiusX="3" RadiusY="3"
+                                                   Opacity="0"
+                                                   RenderTransformOrigin="0.5,0.5">
                                             <Rectangle.RenderTransform>
                                                 <ScaleTransform ScaleX="0.6" ScaleY="0.6"/>
                                             </Rectangle.RenderTransform>
@@ -49,27 +49,27 @@
                                     <VisualState x:Name="Unchecked">
                                         <Storyboard>
                                             <DoubleAnimation Storyboard.TargetName="fill"
-                                                     Storyboard.TargetProperty="Opacity"
-                                                     To="0" Duration="0:0:0.18"/>
+                                                             Storyboard.TargetProperty="Opacity"
+                                                             To="0" Duration="0:0:0.18"/>
                                             <DoubleAnimation Storyboard.TargetName="fill"
-                                                     Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
-                                                     To="0.6" Duration="0:0:0.18"/>
+                                                             Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                                                             To="0.6" Duration="0:0:0.18"/>
                                             <DoubleAnimation Storyboard.TargetName="fill"
-                                                     Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
-                                                     To="0.6" Duration="0:0:0.18"/>
+                                                             Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                                             To="0.6" Duration="0:0:0.18"/>
                                         </Storyboard>
                                     </VisualState>
                                     <VisualState x:Name="Checked">
                                         <Storyboard>
                                             <DoubleAnimation Storyboard.TargetName="fill"
-                                                     Storyboard.TargetProperty="Opacity"
-                                                     To="1" Duration="0:0:0.18"/>
+                                                             Storyboard.TargetProperty="Opacity"
+                                                             To="1" Duration="0:0:0.18"/>
                                             <DoubleAnimation Storyboard.TargetName="fill"
-                                                     Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
-                                                     To="1" Duration="0:0:0.18"/>
+                                                             Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                                                             To="1" Duration="0:0:0.18"/>
                                             <DoubleAnimation Storyboard.TargetName="fill"
-                                                     Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
-                                                     To="1" Duration="0:0:0.18"/>
+                                                             Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                                             To="1" Duration="0:0:0.18"/>
                                         </Storyboard>
                                     </VisualState>
                                 </VisualStateGroup>
@@ -78,18 +78,18 @@
                                     <VisualState x:Name="MouseOver">
                                         <Storyboard>
                                             <ColorAnimation Storyboard.TargetName="box"
-                                                    Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)"
-                                                    To="#4285F4" Duration="0:0:0.2"/>
+                                                            Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)"
+                                                            To="#4285F4" Duration="0:0:0.2"/>
                                         </Storyboard>
                                     </VisualState>
                                     <VisualState x:Name="Disabled">
                                         <Storyboard>
                                             <ColorAnimation Storyboard.TargetName="box"
-                                                    Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)"
-                                                    To="#FF9E9E9E" Duration="0:0:0.2"/>
+                                                            Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)"
+                                                            To="#FF9E9E9E" Duration="0:0:0.2"/>
                                             <ColorAnimation Storyboard.TargetName="fill"
-                                                    Storyboard.TargetProperty="(Shape.Fill).(SolidColorBrush.Color)"
-                                                    To="#FFB0BEC5" Duration="0:0:0.2"/>
+                                                            Storyboard.TargetProperty="(Shape.Fill).(SolidColorBrush.Color)"
+                                                            To="#FFB0BEC5" Duration="0:0:0.2"/>
                                         </Storyboard>
                                     </VisualState>
                                 </VisualStateGroup>
@@ -124,22 +124,22 @@
                                     <VisualState x:Name="MouseOver">
                                         <Storyboard>
                                             <ColorAnimation Storyboard.TargetName="border"
-                                                    Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
-                                                    To="#FF505866" Duration="0:0:0.2"/>
+                                                            Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                            To="#FF505866" Duration="0:0:0.2"/>
                                         </Storyboard>
                                     </VisualState>
                                     <VisualState x:Name="Pressed">
                                         <Storyboard>
                                             <ColorAnimation Storyboard.TargetName="border"
-                                                    Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
-                                                    To="#FF2E3540" Duration="0:0:0.1"/>
+                                                            Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                            To="#FF2E3540" Duration="0:0:0.1"/>
                                         </Storyboard>
                                     </VisualState>
                                     <VisualState x:Name="Disabled">
                                         <Storyboard>
                                             <ColorAnimation Storyboard.TargetName="border"
-                                                    Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
-                                                    To="#FF2A2F38" Duration="0:0:0.2"/>
+                                                            Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                            To="#FF2A2F38" Duration="0:0:0.2"/>
                                         </Storyboard>
                                     </VisualState>
                                 </VisualStateGroup>
@@ -150,6 +150,7 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
         <Style x:Key="RoundedProgressBar" TargetType="ProgressBar">
             <Setter Property="Height" Value="20"/>
             <Setter Property="Foreground" Value="#FF1A73E8"/>
@@ -192,7 +193,16 @@
         </Style>
     </Window.Resources>
     <Grid>
-        <Border Background="#CC1E1E1E" CornerRadius="14" Margin="14" Effect="{StaticResource ShadowEffect}">
+        <Border x:Name="MainBorder"
+                Background="#CC1E1E1E"
+                CornerRadius="14"
+                Margin="14"
+                Effect="{StaticResource ShadowEffect}"
+                Opacity="1"
+                RenderTransformOrigin="0.5,0.5">
+            <Border.RenderTransform>
+                <ScaleTransform ScaleX="1" ScaleY="1"/>
+            </Border.RenderTransform>
             <Grid>
                 <!-- Pasek tytułu z przyciskiem zamknięcia -->
                 <Grid Height="30" VerticalAlignment="Top" Background="Transparent" MouseDown="Window_MouseDown">

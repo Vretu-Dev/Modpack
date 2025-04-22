@@ -41,9 +41,9 @@
                            VerticalAlignment="Top"
                            TextAlignment="Center" Width="42" Margin="1,-4,0,0"/>
 			</Grid>
-			<TextBlock Text="Mod został zainstalowany pomyślnie!" FontWeight="Bold" FontSize="18"
+			<TextBlock Text="Mody zostały zainstalowane pomyślnie!" FontWeight="Bold" FontSize="18"
                        Foreground="White" TextAlignment="Center" Margin="0,0,0,8"/>
-			<TextBlock Text="Możesz już zamknąć to okno lub zainstalować kolejny mod." FontSize="14"
+			<TextBlock Text="Możesz już zamknąć to okno lub zainstalować inne mody." FontSize="14"
                        Foreground="#7A8BAE" TextAlignment="Center" Margin="0,0,0,24"/>
 			<Button Content="Zamknij"
                     Width="100"

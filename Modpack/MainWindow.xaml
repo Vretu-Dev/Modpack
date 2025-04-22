@@ -7,7 +7,8 @@
         WindowStartupLocation="CenterScreen"
         WindowStyle="None"
         AllowsTransparency="True"
-        Background="Transparent">
+        Background="Transparent"
+        Loaded="Window_Loaded">
 
     <Window.Resources>
         <DropShadowEffect x:Key="ShadowEffect" BlurRadius="15" ShadowDepth="0" Color="#AA000000"/>
@@ -85,7 +86,16 @@
     </Window.Resources>
 
     <Grid>
-        <Border Background="#CC1E1E1E" CornerRadius="14" Margin="14" Effect="{StaticResource ShadowEffect}">
+        <Border x:Name="MainBorder"
+                Background="#CC1E1E1E"
+                CornerRadius="14"
+                Margin="14"
+                Effect="{StaticResource ShadowEffect}"
+                Opacity="1"
+                RenderTransformOrigin="0.5,0.5">
+            <Border.RenderTransform>
+                <ScaleTransform ScaleX="1" ScaleY="1"/>
+            </Border.RenderTransform>
             <Grid>
                 <!-- Pasek tytułu z przyciskiem zamknięcia -->
                 <Grid Height="30" VerticalAlignment="Top" Background="Transparent" MouseDown="Window_MouseDown">
