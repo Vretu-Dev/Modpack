@@ -48,21 +48,21 @@ namespace WotModpackLoader
 
             var sb = new Storyboard();
 
-            var opacityAnim = new DoubleAnimation(0, 1, new Duration(TimeSpan.FromMilliseconds(340)))
+            var opacityAnim = new DoubleAnimation(0, 1, new Duration(TimeSpan.FromMilliseconds(150)))
             {
                 EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseOut }
             };
             Storyboard.SetTarget(opacityAnim, MainBorder);
             Storyboard.SetTargetProperty(opacityAnim, new PropertyPath("Opacity"));
 
-            var scaleAnimX = new DoubleAnimation(0.93, 1, new Duration(TimeSpan.FromMilliseconds(340)))
+            var scaleAnimX = new DoubleAnimation(0.93, 1, new Duration(TimeSpan.FromMilliseconds(150)))
             {
                 EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseOut }
             };
             Storyboard.SetTarget(scaleAnimX, MainBorder);
             Storyboard.SetTargetProperty(scaleAnimX, new PropertyPath("RenderTransform.ScaleX"));
 
-            var scaleAnimY = new DoubleAnimation(0.93, 1, new Duration(TimeSpan.FromMilliseconds(340)))
+            var scaleAnimY = new DoubleAnimation(0.93, 1, new Duration(TimeSpan.FromMilliseconds(150)))
             {
                 EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseOut }
             };
@@ -81,21 +81,21 @@ namespace WotModpackLoader
             // Animacja zanikania i pomniejszania
             var sb = new Storyboard();
 
-            var opacityAnim = new DoubleAnimation(1, 0, new Duration(TimeSpan.FromMilliseconds(350)))
+            var opacityAnim = new DoubleAnimation(1, 0, new Duration(TimeSpan.FromMilliseconds(150)))
             {
                 EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseIn }
             };
             Storyboard.SetTarget(opacityAnim, MainBorder);
             Storyboard.SetTargetProperty(opacityAnim, new PropertyPath("Opacity"));
 
-            var scaleAnimX = new DoubleAnimation(1, 0.93, new Duration(TimeSpan.FromMilliseconds(350)))
+            var scaleAnimX = new DoubleAnimation(1, 0.93, new Duration(TimeSpan.FromMilliseconds(150)))
             {
                 EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseIn }
             };
             Storyboard.SetTarget(scaleAnimX, MainBorder);
             Storyboard.SetTargetProperty(scaleAnimX, new PropertyPath("RenderTransform.ScaleX"));
 
-            var scaleAnimY = new DoubleAnimation(1, 0.93, new Duration(TimeSpan.FromMilliseconds(350)))
+            var scaleAnimY = new DoubleAnimation(1, 0.93, new Duration(TimeSpan.FromMilliseconds(150)))
             {
                 EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseIn }
             };

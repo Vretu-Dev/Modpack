@@ -13,10 +13,15 @@
     <Window.Resources>
         <DropShadowEffect x:Key="ShadowEffect" BlurRadius="15" ShadowDepth="0" Color="#AA000000"/>
 
+        <!-- Główny styl przycisku -->
         <Style TargetType="Button">
             <Setter Property="FontSize" Value="15"/>
             <Setter Property="Foreground" Value="White"/>
-            <Setter Property="Background" Value="#FF3A3F4B"/>
+            <Setter Property="Background">
+                <Setter.Value>
+                    <SolidColorBrush Color="#FF3A3F4B"/>
+                </Setter.Value>
+            </Setter>
             <Setter Property="BorderBrush" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Padding" Value="10,4"/>
@@ -27,9 +32,11 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
                         <Border x:Name="border"
-                        Background="{TemplateBinding Background}"
-                        CornerRadius="8"
-                        SnapsToDevicePixels="True">
+                                CornerRadius="8"
+                                SnapsToDevicePixels="True">
+                            <Border.Background>
+                                <SolidColorBrush Color="#FF3A3F4B"/>
+                            </Border.Background>
                             <VisualStateManager.VisualStateGroups>
                                 <VisualStateGroup x:Name="CommonStates">
                                     <VisualState x:Name="Normal"/>
@@ -83,6 +90,66 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
+        <!-- Styl do przycisku X z płynną animacją -->
+        <Style x:Key="CloseButtonStyle" TargetType="Button">
+            <Setter Property="Background">
+                <Setter.Value>
+                    <SolidColorBrush Color="Transparent"/>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Foreground">
+                <Setter.Value>
+                    <SolidColorBrush Color="White"/>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Width" Value="30"/>
+            <Setter Property="Height" Value="24"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" CornerRadius="4" Background="{TemplateBinding Background}">
+                            <TextBlock x:Name="XText"
+                               Text="✕"
+                               FontWeight="Bold"
+                               FontSize="16"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center">
+                                <TextBlock.Foreground>
+                                    <SolidColorBrush Color="White"/>
+                                </TextBlock.Foreground>
+                            </TextBlock>
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name="CommonStates">
+                                    <VisualState x:Name="Normal">
+                                        <Storyboard>
+                                            <ColorAnimation Storyboard.TargetName="XText"
+                                        Storyboard.TargetProperty="(TextBlock.Foreground).(SolidColorBrush.Color)"
+                                        To="White" Duration="0:0:0.2"/>
+                                        </Storyboard>
+                                    </VisualState>
+                                    <VisualState x:Name="MouseOver">
+                                        <Storyboard>
+                                            <ColorAnimation Storyboard.TargetName="XText"
+                                        Storyboard.TargetProperty="(TextBlock.Foreground).(SolidColorBrush.Color)"
+                                        To="Red" Duration="0:0:0.2"/>
+                                        </Storyboard>
+                                    </VisualState>
+                                    <VisualState x:Name="Pressed">
+                                        <Storyboard>
+                                            <ColorAnimation Storyboard.TargetName="XText"
+                                        Storyboard.TargetProperty="(TextBlock.Foreground).(SolidColorBrush.Color)"
+                                        To="DarkRed" Duration="0:0:0.1"/>
+                                        </Storyboard>
+                                    </VisualState>
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
 
     <Grid>
@@ -108,37 +175,10 @@
                     <Grid Grid.Column="0" Background="Transparent"/>
 
                     <!-- Przycisk zamknięcia -->
-                    <Button Grid.Column="1" Content="✕" Width="30" Height="24"
+                    <Button Grid.Column="1"
                             Margin="4"
                             Click="CloseButton_Click"
-                            Background="Transparent"
-                            Foreground="White"
-                            BorderThickness="0"
-                            FontWeight="Bold"
-                            Cursor="Hand">
-                        <Button.Style>
-                            <Style TargetType="Button">
-                                <Setter Property="Background" Value="Transparent"/>
-                                <Setter Property="Foreground" Value="White"/>
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="Button">
-                                            <Border Background="{TemplateBinding Background}"
-                                                    CornerRadius="4">
-                                                <ContentPresenter HorizontalAlignment="Center"
-                                                                  VerticalAlignment="Center"/>
-                                            </Border>
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
-                                <Style.Triggers>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Background" Value="#FF5A5A5A"/>
-                                    </Trigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Button.Style>
-                    </Button>
+                            Style="{StaticResource CloseButtonStyle}" />
                 </Grid>
 
                 <!-- Zawartość główna -->
