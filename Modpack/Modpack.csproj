@@ -11,7 +11,7 @@
     <Authors>Vretu</Authors>
     <Product>NewMulti2k $(AssemblyName)</Product>
     <AssemblyName>NewMulti2k $(MSBuildProjectName)</AssemblyName>
-    <Version>1.2.0</Version>
+    <Version>1.3.0</Version>
   </PropertyGroup>
 
   <ItemGroup>

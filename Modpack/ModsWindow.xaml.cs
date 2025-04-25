@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using System.Text.Json;
 using System.Windows.Input;
 using System.Windows.Media.Animation;
+using System.Xml.Linq;
 
 namespace WotModpackLoader
 {
@@ -210,7 +211,7 @@ namespace WotModpackLoader
             }
 
             // Pobierz wersję gry
-            string version = await GetWotVersionAsync();
+            string version = await GetWotVersionAsync(gameFolder);
 
             Directory.CreateDirectory(Path.Combine(modsFolder, version));
             Directory.CreateDirectory(Path.Combine(resModsFolder, version));
@@ -218,27 +219,42 @@ namespace WotModpackLoader
             return version;
         }
 
-        private async Task<string> GetWotVersionAsync()
+        private async Task<string> GetWotVersionAsync(string gameFolder)
         {
-            string url = "https://aslain.com/update_checker/WoT_installer.json";
-            using (var http = new HttpClient())
+            string versionFile = Path.Combine(gameFolder, "version.xml");
+            if (!File.Exists(versionFile))
+                throw new FileNotFoundException("Nie znaleziono pliku version.xml", versionFile);
+
+            string xmlContent;
+            using (var reader = new StreamReader(versionFile))
             {
-                var json = await http.GetStringAsync(url);
-                using (var doc = JsonDocument.Parse(json))
-                {
-                    var version = doc.RootElement.GetProperty("installer").GetProperty("version").GetString();
-                    if (!string.IsNullOrEmpty(version))
-                    {
-                        int lastDot = version.LastIndexOf('.');
-                        if (lastDot > 0)
-                        {
-                            string trimmed = version.Substring(0, lastDot);
-                            return trimmed;
-                        }
-                    }
-                    throw new Exception("Nie można pobrać wersji WoT");
-                }
+                xmlContent = await reader.ReadToEndAsync();
             }
+
+            var doc = XDocument.Parse(xmlContent);
+            var versionElement = doc.Root?.Element("version");
+            if (versionElement == null)
+                throw new Exception("Brak elementu <version> w pliku version.xml");
+
+            string rawVersion = versionElement.Value.Trim();
+            if (rawVersion.StartsWith("v."))
+                rawVersion = rawVersion.Substring(2).Trim();
+
+            int spaceIdx = rawVersion.IndexOf(' ');
+            int hashIdx = rawVersion.IndexOf('#');
+            int cutIdx = -1;
+
+            if (spaceIdx >= 0 && hashIdx >= 0)
+                cutIdx = Math.Min(spaceIdx, hashIdx);
+            else if (spaceIdx >= 0)
+                cutIdx = spaceIdx;
+            else if (hashIdx >= 0)
+                cutIdx = hashIdx;
+
+            if (cutIdx > 0)
+                rawVersion = rawVersion.Substring(0, cutIdx).Trim();
+
+            return rawVersion;
         }
 
         // Pomocnicza funkcja
